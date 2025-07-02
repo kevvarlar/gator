@@ -55,7 +55,7 @@ func handlerRegister(s *state, cmd command) error {
 	if len(cmd.arguments) == 0 {
 		return fmt.Errorf("the register handler expects a single argument, the username")
 	}
-	user, err := s.gatorDB.CreateUser(context.Background(), database.CreateUserParams{
+	_, err := s.gatorDB.CreateUser(context.Background(), database.CreateUserParams{
 		ID: uuid.New(),
 		CreatedAt: sql.NullTime{
 			Time: time.Now(),
@@ -75,6 +75,14 @@ func handlerRegister(s *state, cmd command) error {
 		return err
 	}
 	fmt.Println("user was created")
-	fmt.Println(user)
+	return nil
+}
+
+func handlerReset(s *state, c command) error {
+	err := s.gatorDB.Reset(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to reset users database: %w", err)
+	}
+	fmt.Println("Successfully reseted users database")
 	return nil
 }
