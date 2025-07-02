@@ -30,6 +30,8 @@ func main() {
 	gatorCommands.register("login", handlerLogin)
 	gatorCommands.register("register", handlerRegister)
 	gatorCommands.register("reset", handlerReset)
+	gatorCommands.register("users", handlerUsers)
+	gatorCommands.register("agg", handlerAgg)
 	arguments := os.Args
 	if len(arguments) < 2 {
 		log.Fatal("No command name provided")

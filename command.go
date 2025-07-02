@@ -78,11 +78,38 @@ func handlerRegister(s *state, cmd command) error {
 	return nil
 }
 
-func handlerReset(s *state, c command) error {
+func handlerReset(s *state, cmd command) error {
 	err := s.gatorDB.Reset(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to reset users database: %w", err)
 	}
 	fmt.Println("Successfully reseted users database")
+	return nil
+}
+
+func handlerUsers(s *state, cmd command) error {
+	users, err := s.gatorDB.GetUsers(context.Background())
+	if err != nil {
+		return err
+	}
+	for _, user := range users {
+		if user.Name == s.gatorConfig.CurrentUserName {
+			fmt.Println(" *", user.Name, "(current)")
+		} else {
+			fmt.Println(" *", user.Name)
+		}
+	}
+	return nil
+}
+
+func handlerAgg(s *state, cmd command) error {
+	// if len(cmd.arguments) == 0 {
+	// 	return fmt.Errorf("the agg handler expects a single argument, the feed url")
+	// }
+	rss, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	if err != nil {
+		return err
+	}
+	fmt.Print(rss)
 	return nil
 }
