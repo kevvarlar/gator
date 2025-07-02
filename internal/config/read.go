@@ -13,7 +13,7 @@ func getConfigFilePath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("unable to get home directory: %w", err)
 	}
-	return home + "/gator/" + configFileName, nil
+	return home + "/" + configFileName, nil
 }
 
 func Read() (Config, error) {

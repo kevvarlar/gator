@@ -1,22 +1,43 @@
 package main
 
 import (
-	"fmt"
+	"database/sql"
+	"log"
+	"os"
 
 	"github.com/kevvarlar/gator/internal/config"
+	"github.com/kevvarlar/gator/internal/database"
+	_ "github.com/lib/pq"
 )
+
 func main() {
-	cfg, err := config.Read()
+	gatorConfig, err := config.Read()
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
-	err = cfg.SetUser("kevvarlar")
+	db, err := sql.Open("postgres", gatorConfig.DbURL)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
-	result, err := config.Read()
+	dbQueries := database.New(db)
+	gatorState := state{
+		gatorConfig: &gatorConfig,
+		gatorDB: dbQueries,
+	}
+	gatorCommands := commands{
+		commandNames: make(map[string]func(*state, command) error),
+	}
+	gatorCommands.register("login", handlerLogin)
+	arguments := os.Args
+	if len(arguments) < 2 {
+		log.Fatal("No command name provided")
+	}
+	gatorCommand := command{
+		name: arguments[1],
+		arguments: arguments[2:],
+	}
+	err = gatorCommands.run(&gatorState, gatorCommand)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
-	fmt.Println(result)
 }
