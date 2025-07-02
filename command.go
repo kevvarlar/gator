@@ -113,3 +113,31 @@ func handlerAgg(s *state, cmd command) error {
 	fmt.Print(rss)
 	return nil
 }
+
+func handlerAddfeed(s *state, cmd command) error {
+	if len(cmd.arguments) < 2 {
+		return fmt.Errorf("the add feed handler expects two arguments, the name of the feed and the url of the feed")
+	}
+	user, err := s.gatorDB.GetUser(context.Background(), s.gatorConfig.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("failed to get current user: %w", err)
+	}
+	s.gatorDB.CreateFeed(context.Background(), database.CreateFeedParams{
+		ID: uuid.New(),
+		CreatedAt: sql.NullTime{
+			Time: time.Now(),
+			Valid: true,
+		},
+		UpdatedAt: sql.NullTime{
+			Time: time.Now(),
+			Valid: true,
+		},
+		Name: cmd.arguments[0],
+		Url: cmd.arguments[1],
+		UserID: uuid.NullUUID{
+			UUID: user.ID,
+			Valid: true,
+		},
+	})
+	return nil
+}
