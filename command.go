@@ -1,6 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/kevvarlar/gator/internal/database"
+)
 
 type command struct {
 	name string
@@ -31,10 +39,42 @@ func handlerLogin(s *state, cmd command) error {
 	if len(cmd.arguments) == 0 {
 		return fmt.Errorf("the login handler expects a single argument, the username")
 	}
-	err := s.gatorConfig.SetUser(cmd.arguments[0])
+	_, err := s.gatorDB.GetUser(context.Background(), cmd.arguments[0])
+	if err != nil {
+		return fmt.Errorf("you cannot login to an account that does not exist: %w", err)
+	}
+	err = s.gatorConfig.SetUser(cmd.arguments[0])
 	if err != nil {
 		return err
 	}
 	fmt.Println("The user has been set")
+	return nil
+}
+
+func handlerRegister(s *state, cmd command) error {
+	if len(cmd.arguments) == 0 {
+		return fmt.Errorf("the register handler expects a single argument, the username")
+	}
+	user, err := s.gatorDB.CreateUser(context.Background(), database.CreateUserParams{
+		ID: uuid.New(),
+		CreatedAt: sql.NullTime{
+			Time: time.Now(),
+			Valid: true,
+		},
+		UpdatedAt: sql.NullTime{
+			Time: time.Now(),
+			Valid: true,
+		},
+		Name: cmd.arguments[0],
+	})
+	if err != nil {
+		return err
+	}
+	err = handlerLogin(s, cmd)
+	if err != nil {
+		return err
+	}
+	fmt.Println("user was created")
+	fmt.Println(user)
 	return nil
 }

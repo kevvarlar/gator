@@ -28,6 +28,7 @@ func main() {
 		commandNames: make(map[string]func(*state, command) error),
 	}
 	gatorCommands.register("login", handlerLogin)
+	gatorCommands.register("register", handlerRegister)
 	arguments := os.Args
 	if len(arguments) < 2 {
 		log.Fatal("No command name provided")
