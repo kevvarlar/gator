@@ -30,6 +30,5 @@ func Read() (Config, error) {
 	if err := decoder.Decode(&config); err != nil {
 		return config, fmt.Errorf("failed to decode config file: %w", err)
 	}
-	fmt.Println(config)
 	return config, nil
 }

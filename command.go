@@ -141,3 +141,14 @@ func handlerAddfeed(s *state, cmd command) error {
 	})
 	return nil
 }
+
+func handlerFeeds(s *state, cmd command) error {
+	feeds, err := s.gatorDB.GetFeeds(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to get feeds: %w", err)
+	}
+	for _, feed := range feeds {
+		fmt.Println(feed)
+	}
+	return nil
+}
