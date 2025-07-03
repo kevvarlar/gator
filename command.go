@@ -220,3 +220,18 @@ func handleFollowing(s *state, cmd command) error {
 	}
 	return nil
 }
+
+func handleUnfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.arguments) == 0 {
+		return fmt.Errorf("the unfollow handler expects a single argument, the feed url")
+	}
+	_, err := s.gatorDB.DeleteFeedFollow(context.Background(), database.DeleteFeedFollowParams{
+		Name: user.Name,
+		Url: cmd.arguments[0],
+	})
+	if err != nil {
+		return fmt.Errorf("failed to delete feed: %w", err)
+	}
+	fmt.Println("Successfully unfollowed the feed")
+	return nil
+}
