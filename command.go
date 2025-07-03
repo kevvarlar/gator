@@ -35,15 +35,11 @@ func (c *commands) register(name string, f func(*state, command) error) {
 	c.commandNames[name] = f
 }
 
-func handlerLogin(s *state, cmd command) error {
+func handlerLogin(s *state, cmd command, _ database.User) error {
 	if len(cmd.arguments) == 0 {
 		return fmt.Errorf("the login handler expects a single argument, the username")
 	}
-	_, err := s.gatorDB.GetUser(context.Background(), cmd.arguments[0])
-	if err != nil {
-		return fmt.Errorf("you cannot login to an account that does not exist: %w", err)
-	}
-	err = s.gatorConfig.SetUser(cmd.arguments[0])
+	err := s.gatorConfig.SetUser(cmd.arguments[0])
 	if err != nil {
 		return err
 	}
@@ -51,7 +47,7 @@ func handlerLogin(s *state, cmd command) error {
 	return nil
 }
 
-func handlerRegister(s *state, cmd command) error {
+func handlerRegister(s *state, cmd command, user database.User) error {
 	if len(cmd.arguments) == 0 {
 		return fmt.Errorf("the register handler expects a single argument, the username")
 	}
@@ -70,7 +66,7 @@ func handlerRegister(s *state, cmd command) error {
 	if err != nil {
 		return err
 	}
-	err = handlerLogin(s, cmd)
+	err = handlerLogin(s, cmd, user)
 	if err != nil {
 		return err
 	}
@@ -114,14 +110,11 @@ func handlerAgg(s *state, cmd command) error {
 	return nil
 }
 
-func handlerAddfeed(s *state, cmd command) error {
+func handlerAddfeed(s *state, cmd command, user database.User) error {
 	if len(cmd.arguments) < 2 {
 		return fmt.Errorf("the add feed handler expects two arguments, the name of the feed and the url of the feed")
 	}
-	user, err := s.gatorDB.GetUser(context.Background(), s.gatorConfig.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("failed to get current user: %w", err)
-	}
+
 	feed, err := s.gatorDB.CreateFeed(context.Background(), database.CreateFeedParams{
 		ID: uuid.New(),
 		CreatedAt: sql.NullTime{
@@ -180,15 +173,11 @@ func handlerFeeds(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.arguments) == 0 {
 		return fmt.Errorf("the follow handler expects a single argument, the feed url")
 	}
 
-	user, err := s.gatorDB.GetUser(context.Background(), s.gatorConfig.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("failed to get current user: %w", err)
-	}
 	feed, err := s.gatorDB.GetFeed(context.Background(), cmd.arguments[0])
 	if err != nil {
 		return fmt.Errorf("failed to get the feed: %w", err)

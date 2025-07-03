@@ -11,14 +11,14 @@ import (
 )
 
 func registerAll(gatorCommands *commands) {
-	gatorCommands.register("login", handlerLogin)
-	gatorCommands.register("register", handlerRegister)
+	gatorCommands.register("login", middlewareLoggedIn(handlerLogin))
+	gatorCommands.register("register", middlewareLoggedIn(handlerRegister))
 	gatorCommands.register("reset", handlerReset)
 	gatorCommands.register("users", handlerUsers)
 	gatorCommands.register("agg", handlerAgg)
-	gatorCommands.register("addfeed", handlerAddfeed)
+	gatorCommands.register("addfeed", middlewareLoggedIn(handlerAddfeed))
 	gatorCommands.register("feeds", handlerFeeds)
-	gatorCommands.register("follow", handlerFollow)
+	gatorCommands.register("follow", middlewareLoggedIn(handlerFollow))
 	gatorCommands.register("following", handleFollowing)
 }
 
