@@ -10,6 +10,18 @@ import (
 	_ "github.com/lib/pq"
 )
 
+func registerAll(gatorCommands *commands) {
+	gatorCommands.register("login", handlerLogin)
+	gatorCommands.register("register", handlerRegister)
+	gatorCommands.register("reset", handlerReset)
+	gatorCommands.register("users", handlerUsers)
+	gatorCommands.register("agg", handlerAgg)
+	gatorCommands.register("addfeed", handlerAddfeed)
+	gatorCommands.register("feeds", handlerFeeds)
+	gatorCommands.register("follow", handlerFollow)
+	gatorCommands.register("following", handleFollowing)
+}
+
 func main() {
 	gatorConfig, err := config.Read()
 	if err != nil {
@@ -27,13 +39,7 @@ func main() {
 	gatorCommands := commands{
 		commandNames: make(map[string]func(*state, command) error),
 	}
-	gatorCommands.register("login", handlerLogin)
-	gatorCommands.register("register", handlerRegister)
-	gatorCommands.register("reset", handlerReset)
-	gatorCommands.register("users", handlerUsers)
-	gatorCommands.register("agg", handlerAgg)
-	gatorCommands.register("addfeed", handlerAddfeed)
-	gatorCommands.register("feeds", handlerFeeds)
+	registerAll(&gatorCommands)
 	arguments := os.Args
 	if len(arguments) < 2 {
 		log.Fatal("No command name provided")

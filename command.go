@@ -122,7 +122,7 @@ func handlerAddfeed(s *state, cmd command) error {
 	if err != nil {
 		return fmt.Errorf("failed to get current user: %w", err)
 	}
-	s.gatorDB.CreateFeed(context.Background(), database.CreateFeedParams{
+	feed, err := s.gatorDB.CreateFeed(context.Background(), database.CreateFeedParams{
 		ID: uuid.New(),
 		CreatedAt: sql.NullTime{
 			Time: time.Now(),
@@ -139,6 +139,33 @@ func handlerAddfeed(s *state, cmd command) error {
 			Valid: true,
 		},
 	})
+	if err != nil {
+		return fmt.Errorf("failed to create feed: %w", err)
+	}
+	feed_follow, err := s.gatorDB.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID: uuid.New(),
+		CreatedAt: sql.NullTime{
+			Time: time.Now(),
+			Valid: true,
+		},
+		UpdatedAt: sql.NullTime{
+			Time: time.Now(),
+			Valid: true,
+		},
+		UserID: uuid.NullUUID{
+			UUID: user.ID,
+			Valid: true,
+		},
+		FeedID: uuid.NullUUID{
+			UUID: feed.ID,
+			Valid: true,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create feed follow: %w", err)
+	}
+	fmt.Println(feed_follow.FeedName, "was created")
+	fmt.Println(feed)
 	return nil
 }
 
@@ -149,6 +176,58 @@ func handlerFeeds(s *state, cmd command) error {
 	}
 	for _, feed := range feeds {
 		fmt.Println(feed)
+	}
+	return nil
+}
+
+func handlerFollow(s *state, cmd command) error {
+	if len(cmd.arguments) == 0 {
+		return fmt.Errorf("the follow handler expects a single argument, the feed url")
+	}
+
+	user, err := s.gatorDB.GetUser(context.Background(), s.gatorConfig.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("failed to get current user: %w", err)
+	}
+	feed, err := s.gatorDB.GetFeed(context.Background(), cmd.arguments[0])
+	if err != nil {
+		return fmt.Errorf("failed to get the feed: %w", err)
+	}
+	feed_follow, err := s.gatorDB.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID: uuid.New(),
+		CreatedAt: sql.NullTime{
+			Time: time.Now(),
+			Valid: true,
+		},
+		UpdatedAt: sql.NullTime{
+			Time: time.Now(),
+			Valid: true,
+		},
+		UserID: uuid.NullUUID{
+			UUID: user.ID,
+			Valid: true,
+		},
+		FeedID: uuid.NullUUID{
+			UUID: feed.ID,
+			Valid: true,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create feed follow: %w", err)
+	}
+	fmt.Println("Successfully followed feed!")
+	fmt.Println("Feed name:", feed_follow.FeedName, "|", "Feed user:", feed_follow.UserName)
+	return nil
+}
+
+func handleFollowing(s *state, cmd command) error {
+	feed_follows, err := s.gatorDB.GetFeedFollowsForUser(context.Background(), s.gatorConfig.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("failed to get feed follows for current user: %w", err)
+	}
+	fmt.Println("All of the feeds", s.gatorConfig.CurrentUserName, "is following: ")
+	for _, follow := range feed_follows {
+		fmt.Println(" -", follow.FeedName)
 	}
 	return nil
 }
