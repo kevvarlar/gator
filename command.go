@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -219,7 +220,7 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 	return nil
 }
 
-func handleFollowing(s *state, cmd command) error {
+func handlerFollowing(s *state, cmd command) error {
 	feed_follows, err := s.gatorDB.GetFeedFollowsForUser(context.Background(), s.gatorConfig.CurrentUserName)
 	if err != nil {
 		return fmt.Errorf("failed to get feed follows for current user: %w", err)
@@ -231,7 +232,7 @@ func handleFollowing(s *state, cmd command) error {
 	return nil
 }
 
-func handleUnfollow(s *state, cmd command, user database.User) error {
+func handlerUnfollow(s *state, cmd command, user database.User) error {
 	if len(cmd.arguments) == 0 {
 		return fmt.Errorf("the unfollow handler expects a single argument, the feed url")
 	}
@@ -243,5 +244,30 @@ func handleUnfollow(s *state, cmd command, user database.User) error {
 		return fmt.Errorf("failed to delete feed: %w", err)
 	}
 	fmt.Println("Successfully unfollowed the feed")
+	return nil
+}
+
+func handlerBrowse(s *state, cmd command) error {
+	var limit int32 = 2
+	if len(cmd.arguments) > 0 {
+		parsedLimit, err := strconv.Atoi(cmd.arguments[0])
+        if err != nil {
+            return fmt.Errorf("invalid limit: %w", err)
+        }
+        limit = int32(parsedLimit)
+	}
+	posts, err := s.gatorDB.GetPostsForUser(context.Background(), database.GetPostsForUserParams{
+		Name: s.gatorConfig.CurrentUserName,
+		Limit: int32(limit),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get posts: %w", err)
+	}
+	for _, post := range posts {
+		fmt.Println("Title:", post.Title)
+		fmt.Println("Description:", post.Description)
+		fmt.Println("Link:", post.Url)
+		fmt.Println()
+	}
 	return nil
 }

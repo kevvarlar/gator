@@ -19,8 +19,9 @@ func registerAll(gatorCommands *commands) {
 	gatorCommands.register("addfeed", middlewareLoggedIn(handlerAddfeed))
 	gatorCommands.register("feeds", handlerFeeds)
 	gatorCommands.register("follow", middlewareLoggedIn(handlerFollow))
-	gatorCommands.register("following", handleFollowing)
-	gatorCommands.register("unfollow", middlewareLoggedIn(handleUnfollow))
+	gatorCommands.register("following", handlerFollowing)
+	gatorCommands.register("unfollow", middlewareLoggedIn(handlerUnfollow))
+	gatorCommands.register("browse", handlerBrowse)
 }
 
 func main() {

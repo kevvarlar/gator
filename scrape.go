@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/kevvarlar/gator/internal/database"
 )
 
@@ -14,21 +15,45 @@ func scrapeFeeds(s* state) error {
 	if err != nil {
 		return fmt.Errorf("failed to get next feed: %w", err)
 	}
-	if _, err := s.gatorDB.MarkFeedFetched(context.Background(), database.MarkFeedFetchedParams{
+	fetchedFeed, err := s.gatorDB.MarkFeedFetched(context.Background(), database.MarkFeedFetchedParams{
 		LastFetchedAt: sql.NullTime{
 			Time: time.Now(),
 			Valid: true,
 		},
 		ID: nextFeed.ID,
-	}); err != nil {
+	})
+	if err != nil {
 		return fmt.Errorf("failed to update feed as fetched: %w", err)
 	}
 	feed, err := fetchFeed(context.Background(), nextFeed.Url)
 	if err != nil {
 		return fmt.Errorf("failed to fetch created feed: %w", err)
 	}
-	for _, item := range feed.Channel.Item {
-		fmt.Println(" -", item.Title)
+	for _, post := range feed.Channel.Item {
+		layout := "Mon, 02 Jan 2006 15:04:05 MST"
+		pubDate, err := time.Parse(layout, post.PubDate)
+		if err != nil {
+			return err
+		}
+		_, err = s.gatorDB.CreatePost(context.Background(), database.CreatePostParams{
+			ID: uuid.New(),
+			CreatedAt: sql.NullTime{
+				Time: time.Now(),
+				Valid: true,
+			},
+			UpdatedAt: sql.NullTime{
+				Time: time.Now(),
+				Valid: true,
+			},
+			Title: post.Title,
+			Url: post.Link,
+			Description: post.Description,
+			PublishedAt: pubDate,
+			FeedID: fetchedFeed.ID,
+		})
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 	return nil
 }
