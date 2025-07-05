@@ -47,7 +47,7 @@ func handlerLogin(s *state, cmd command, _ database.User) error {
 	return nil
 }
 
-func handlerRegister(s *state, cmd command, user database.User) error {
+func handlerRegister(s *state, cmd command) error {
 	if len(cmd.arguments) == 0 {
 		return fmt.Errorf("the register handler expects a single argument, the username")
 	}
@@ -65,6 +65,10 @@ func handlerRegister(s *state, cmd command, user database.User) error {
 	})
 	if err != nil {
 		return err
+	}
+	user, err := s.gatorDB.GetUser(context.Background(), cmd.arguments[0])
+	if err != nil {
+		return fmt.Errorf("failed to get user: %w", err)
 	}
 	err = handlerLogin(s, cmd, user)
 	if err != nil {
@@ -99,15 +103,21 @@ func handlerUsers(s *state, cmd command) error {
 }
 
 func handlerAgg(s *state, cmd command) error {
-	// if len(cmd.arguments) == 0 {
-	// 	return fmt.Errorf("the agg handler expects a single argument, the feed url")
-	// }
-	rss, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
-	if err != nil {
-		return err
+	if len(cmd.arguments) == 0 {
+		return fmt.Errorf("the agg handler expects a single argument, the time between requests")
 	}
-	fmt.Print(rss)
-	return nil
+	timeBetweenRequests, err := time.ParseDuration(cmd.arguments[0])
+	if err != nil {
+		return fmt.Errorf("error parsing time between requests: %w", err)
+	}
+	fmt.Println("Collecting feeds every", cmd.arguments[0])
+	ticker := time.NewTicker(timeBetweenRequests)
+	for ; ; <-ticker.C {
+		err := scrapeFeeds(s)
+		if err != nil {
+			return err
+		}
+	}
 }
 
 func handlerAddfeed(s *state, cmd command, user database.User) error {

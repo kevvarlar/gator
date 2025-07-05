@@ -12,7 +12,7 @@ import (
 
 func registerAll(gatorCommands *commands) {
 	gatorCommands.register("login", middlewareLoggedIn(handlerLogin))
-	gatorCommands.register("register", middlewareLoggedIn(handlerRegister))
+	gatorCommands.register("register", handlerRegister)
 	gatorCommands.register("reset", handlerReset)
 	gatorCommands.register("users", handlerUsers)
 	gatorCommands.register("agg", handlerAgg)

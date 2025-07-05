@@ -15,3 +15,14 @@ SELECT f.name AS feed_name, f.url AS feed_url, u.name AS user_name FROM feeds f 
 
 -- name: GetFeed :one
 SELECT * FROM feeds WHERE url = $1;
+
+-- name: MarkFeedFetched :one
+UPDATE feeds
+SET last_fetched_at = $1, updated_at = $1
+WHERE id = $2
+RETURNING *;
+
+-- name: GetNextFeedToFetch :one
+SELECT * FROM feeds
+ORDER BY last_fetched_at ASC NULLS FIRST
+LIMIT 1;
