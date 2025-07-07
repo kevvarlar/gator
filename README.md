@@ -26,12 +26,27 @@ Gator is a command-line RSS feed aggregator and reader written in Go. It allows 
    go install github.com/kevvarlar/gator@latest
    ```
 
+
 2. **Configure the database:**
-   - Create a PostgreSQL database.
+   - Create a new PostgreSQL database called `gator` by running:
+   (Linux/WSL)
+     ```sh
+     sudo -u postgres psql -c "CREATE DATABASE gator;"
+     ```
+   (Mac)
+   ```sh
+   psql postgres -c "CREATE DATABASE gator;"
+   ```
    - Set the `db_url` in your config (see below).
 
-3. **Run database migrations:**
-   - The SQL schema files are in `sql/schema/`.
+3. **Get the migration files:**
+   - Download or clone the migration files from the repository:
+     ```sh
+     git clone https://github.com/kevvarlar/gator.git
+     # Or download just the sql/schema directory from the repo
+     ```
+
+4. **Run database migrations:**
    - Use [goose](https://github.com/pressly/goose) or your preferred migration tool:
      ```sh
      goose -dir sql/schema postgres "$DB_URL" up
