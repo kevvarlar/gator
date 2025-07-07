@@ -20,10 +20,10 @@ Gator is a command-line RSS feed aggregator and reader written in Go. It allows 
 
 ## Setup
 
-1. **Clone the repository:**
+
+1. **Install with Go:**
    ```sh
-   git clone https://github.com/kevvarlar/gator.git
-   cd gator
+   go install github.com/kevvarlar/gator@latest
    ```
 
 2. **Configure the database:**
@@ -37,16 +37,17 @@ Gator is a command-line RSS feed aggregator and reader written in Go. It allows 
      goose -dir sql/schema postgres "$DB_URL" up
      ```
 
-4. **Generate Go database code:**
+4. **Generate Go database code (for development only):**
    ```sh
    sqlc generate
    ```
 
-5. **Build and run:**
-   ```sh
-   go build -o gator
-   ./gator <command> [arguments...]
-   ```
+## Usage
+
+After installation, you can run gator from anywhere:
+```sh
+gator <command> [arguments...]
+```
 
 ## Configuration
 
@@ -58,6 +59,7 @@ gator uses a JSON config file stored at `~/.gatorconfig.json`:
   "current_user_name": "yourusername"
 }
 ```
+
 
 You can set the current user with the `login` command.
 
@@ -84,7 +86,8 @@ You can set the current user with the `login` command.
 
 See `sql/schema/` for full schema definitions.
 
-## Code Structure
+
+## Code Structure (for contributors)
 
 - `main.go`: Entry point, command registration, and app startup
 - `command.go`: Command handlers and business logic
