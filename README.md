@@ -44,14 +44,14 @@ Gator is a command-line RSS feed aggregator and reader written in Go. It allows 
 
 ## Usage
 
-After installation, you can run gator from anywhere:
+After installation, you can run Gator from anywhere:
 ```sh
 gator <command> [arguments...]
 ```
 
 ## Configuration
 
-gator uses a JSON config file stored at `~/.gatorconfig.json`:
+Gator uses a JSON config file stored at `~/.gatorconfig.json`:
 
 ```json
 {
